@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DCA Platform · Stellar — HackMeridian</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #0a0a0f;
+    --bg-elev: #13131c;
+    --bg-elev-2: #1b1b26;
+    --border: rgba(255,255,255,.08);
+    --border-strong: rgba(255,255,255,.14);
+    --text: #f5f5f7;
+    --text-dim: #a8a8b2;
+    --text-faint: #6a6a74;
+    --accent: #635bff;
+    --accent-2: #00d4ff;
+    --success: #00e6aa;
+    --warning: #ffb400;
+    --danger: #ff5c7a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  /* ───── Navbar ───── */
+  .nav { position: sticky; top: 0; z-index: 50; background: rgba(10,10,15,.75); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+  .nav-inner { max-width: 1240px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; gap: 24px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+  .brand .mark { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; font-size: 14px; }
+  .nav-tabs { display: flex; gap: 4px; margin-left: 32px; }
+  .nav-tab { padding: 8px 14px; border-radius: 8px; color: var(--text-dim); font-size: 14px; cursor: pointer; font-weight: 500; transition: all .15s; border: none; background: transparent; font-family: inherit; }
+  .nav-tab:hover { color: var(--text); background: rgba(255,255,255,.04); }
+  .nav-tab.active { color: var(--text); background: rgba(99,91,255,.14); }
+  .nav-spacer { flex: 1; }
+  .network-pill { font-size: 12px; padding: 5px 10px; border-radius: 100px; background: rgba(0,230,170,.14); color: var(--success); font-weight: 600; letter-spacing: .04em; border: 1px solid rgba(0,230,170,.3); }
+  .wallet-btn { padding: 8px 16px; border-radius: 10px; background: var(--accent); color: white; border: none; font-weight: 600; cursor: pointer; font-size: 14px; font-family: inherit; transition: all .15s; }
+  .wallet-btn:hover { background: #7169ff; transform: translateY(-1px); }
+  .wallet-btn.connected { background: rgba(255,255,255,.06); border: 1px solid var(--border-strong); color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .wallet-btn.connected .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+
+  /* ───── Hero ───── */
+  .hero { max-width: 1240px; margin: 0 auto; padding: 80px 24px 40px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ""; position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 800px; height: 800px; background: radial-gradient(circle, rgba(99,91,255,.15), transparent 60%); pointer-events: none; }
+  .hero .pill { display: inline-block; padding: 6px 14px; border-radius: 100px; background: rgba(99,91,255,.14); color: #a9a5ff; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; border: 1px solid rgba(99,91,255,.3); margin-bottom: 24px; position: relative; }
+  .hero h1 { font-size: 76px; line-height: 1.02; letter-spacing: -0.03em; margin: 0 0 20px; font-weight: 700; position: relative; background: linear-gradient(135deg, #fff 0%, #a9a5ff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { font-size: 22px; line-height: 1.5; color: var(--text-dim); max-width: 680px; margin: 0 auto 40px; position: relative; }
+  .hero .cta-row { display: inline-flex; gap: 12px; position: relative; }
+  .btn-primary { padding: 14px 28px; border-radius: 12px; background: var(--accent); color: white; border: none; font-weight: 600; font-size: 15px; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .btn-primary:hover { background: #7169ff; transform: translateY(-1px); box-shadow: 0 10px 30px -10px rgba(99,91,255,.5); }
+  .btn-secondary { padding: 14px 28px; border-radius: 12px; background: rgba(255,255,255,.06); color: white; border: 1px solid var(--border-strong); font-weight: 600; font-size: 15px; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .btn-secondary:hover { background: rgba(255,255,255,.1); }
+
+  /* ───── Container ───── */
+  .page { max-width: 1240px; margin: 0 auto; padding: 24px; }
+  .section-title { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-faint); margin: 0 0 16px; font-weight: 600; }
+
+  /* ───── Dashboard ───── */
+  .dash-grid { display: grid; grid-template-columns: minmax(360px, 1fr) 1.5fr; gap: 24px; margin-top: 24px; }
+  .card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 18px; padding: 28px; }
+  .card h2 { font-size: 20px; margin: 0 0 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .card .subhead { font-size: 14px; color: var(--text-dim); margin-top: -14px; margin-bottom: 24px; }
+
+  /* ───── Form ───── */
+  .form-row { margin-bottom: 18px; }
+  .form-row label { display: block; font-size: 13px; color: var(--text-dim); margin-bottom: 8px; font-weight: 500; }
+  .input { width: 100%; padding: 12px 14px; border-radius: 10px; background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text); font-size: 15px; font-family: inherit; transition: border-color .15s; }
+  .input:focus { outline: none; border-color: var(--accent); }
+  .input::placeholder { color: var(--text-faint); }
+  .select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a8a8b2' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .direction-toggle { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; padding: 10px; background: var(--bg-elev-2); border-radius: 12px; border: 1px solid var(--border); }
+  .token { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; }
+  .token .ico { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: white; letter-spacing: -0.02em; }
+  .token .ico.usdc { background: linear-gradient(135deg, #2775ca, #1861a8); }
+  .token .ico.xlm { background: linear-gradient(135deg, #000, #333); border: 1px solid #555; }
+  .token .meta { line-height: 1.1; }
+  .token .code { font-size: 15px; font-weight: 600; color: var(--text); }
+  .token .name { font-size: 11px; color: var(--text-faint); }
+  .arrow-btn { background: var(--bg-elev); border: 1px solid var(--border-strong); color: var(--accent); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 16px; font-family: inherit; transition: all .15s; display: flex; align-items: center; justify-content: center; }
+  .arrow-btn:hover { background: var(--accent); color: white; }
+  .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-help { font-size: 12px; color: var(--text-faint); margin-top: 6px; }
+  .summary { background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 20px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+  .summary-row .k { color: var(--text-dim); }
+  .summary-row .v { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .summary-row.total { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 12px; font-weight: 600; }
+  .btn-create { width: 100%; padding: 14px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), #7169ff); color: white; border: none; font-weight: 600; font-size: 15px; cursor: pointer; font-family: inherit; margin-top: 20px; transition: all .15s; }
+  .btn-create:hover { transform: translateY(-1px); box-shadow: 0 10px 30px -10px rgba(99,91,255,.5); }
+  .btn-create:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ───── Plans ───── */
+  .plans-empty { text-align: center; padding: 48px 20px; color: var(--text-faint); }
+  .plans-empty .ico { font-size: 40px; margin-bottom: 12px; opacity: .3; }
+  .plans-empty p { font-size: 14px; margin: 0; }
+  .plan { background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; transition: border-color .15s; }
+  .plan:hover { border-color: var(--border-strong); }
+  .plan-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .plan-swap { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; }
+  .plan-swap .code { font-variant-numeric: tabular-nums; }
+  .plan-swap .arrow { color: var(--text-faint); margin: 0 2px; }
+  .plan-id { font-size: 11px; color: var(--text-faint); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+  .plan-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+  .plan-stat { padding: 10px 12px; background: rgba(255,255,255,.03); border-radius: 8px; }
+  .plan-stat .lbl { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .plan-stat .val { font-size: 15px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .progress { height: 6px; background: rgba(255,255,255,.06); border-radius: 100px; overflow: hidden; margin-bottom: 16px; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 100px; transition: width .4s cubic-bezier(.2,.9,.3,1); }
+  .plan-actions { display: flex; gap: 8px; }
+  .btn-sm { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border-strong); background: transparent; color: var(--text); font-family: inherit; transition: all .15s; }
+  .btn-sm:hover { background: rgba(255,255,255,.06); }
+  .btn-sm.danger { color: var(--danger); border-color: rgba(255,92,122,.3); }
+  .btn-sm.danger:hover { background: rgba(255,92,122,.1); }
+  .plan.completed { opacity: .55; }
+  .plan.completed .plan-swap::after { content: "COMPLETED"; font-size: 10px; padding: 3px 8px; background: rgba(0,230,170,.14); color: var(--success); border-radius: 100px; letter-spacing: .08em; font-weight: 700; margin-left: 10px; }
+
+  /* ───── Stats row ───── */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+  .stat { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  .stat .lbl { font-size: 12px; color: var(--text-faint); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+  .stat .val { font-size: 26px; font-weight: 700; letter-spacing: -0.015em; font-variant-numeric: tabular-nums; }
+  .stat .val .unit { font-size: 15px; color: var(--text-dim); font-weight: 500; margin-left: 4px; }
+  .stat .sub { font-size: 12px; color: var(--text-faint); margin-top: 4px; }
+
+  /* ───── Admin ───── */
+  .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ───── Toast ───── */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; transform: translateY(80px); opacity: 0; transition: all .3s cubic-bezier(.2,.9,.3,1); z-index: 100; max-width: 360px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast .ico { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .toast.ok .ico { background: rgba(0,230,170,.2); color: var(--success); }
+  .toast.err .ico { background: rgba(255,92,122,.2); color: var(--danger); }
+  .toast .msg { font-size: 14px; line-height: 1.3; }
+  .toast .sub { color: var(--text-dim); font-size: 12px; margin-top: 2px; }
+
+  /* ───── Loading ───── */
+  .loading { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ───── Hidden tabs ───── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ───── Modal (connect wallet) ───── */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 200; }
+  .modal-backdrop.show { display: flex; }
+  .modal { background: var(--bg-elev); border: 1px solid var(--border-strong); border-radius: 18px; padding: 28px; width: 100%; max-width: 400px; }
+  .modal h3 { margin: 0 0 8px; font-size: 20px; }
+  .modal p { color: var(--text-dim); font-size: 14px; margin: 0 0 20px; }
+  .wallet-option { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: all .15s; }
+  .wallet-option:hover { border-color: var(--accent); background: rgba(99,91,255,.08); }
+  .wallet-option .logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: white; }
+  .wallet-option .meta .name { font-size: 15px; font-weight: 600; }
+  .wallet-option .meta .desc { font-size: 12px; color: var(--text-dim); }
+
+  @media (max-width: 900px) {
+    .nav-tabs { display: none; }
+    .hero h1 { font-size: 44px; }
+    .hero p { font-size: 17px; }
+    .dash-grid, .admin-grid { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .plan-stats { grid-template-columns: repeat(2, 1fr); }
+    .nav-inner { padding: 12px 16px; gap: 12px; }
+    .page { padding: 16px; }
+    .brand { font-size: 15px; }
+    .brand .mark { width: 24px; height: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── Navbar ─── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <div class="mark">D</div>
+      DCA Platform
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="home">Home</button>
+      <button class="nav-tab" data-tab="app">App</button>
+      <button class="nav-tab" data-tab="admin">Admin</button>
+    </div>
+    <div class="nav-spacer"></div>
+    <span class="network-pill">● Testnet</span>
+    <button id="walletBtn" class="wallet-btn">Connect Wallet</button>
+  </div>
+</nav>
+
+<!-- ─── HOME TAB ─── -->
+<div id="tab-home" class="tab-panel active">
+  <section class="hero">
+    <span class="pill">● Live on Stellar Testnet</span>
+    <h1>Dollar-cost average,<br>on autopilot.</h1>
+    <p>Deposit USDC. Pick an interval. Our smart contract swaps it to XLM on Soroswap, slice by slice. Non-custodial, cancel anytime, 0.5% per execution.</p>
+    <div class="cta-row">
+      <button class="btn-primary" onclick="switchTab('app')">Launch App →</button>
+      <a class="btn-secondary" href="https://github.com/NicoleCarolina/HackMeridian" target="_blank" style="text-decoration:none;display:inline-block;">View on GitHub</a>
+    </div>
+  </section>
+
+  <div class="page">
+    <div class="stats">
+      <div class="stat">
+        <div class="lbl">Total Volume (demo)</div>
+        <div class="val">$12,480<span class="unit">USDC</span></div>
+        <div class="sub">+ $340 last 24h</div>
+      </div>
+      <div class="stat">
+        <div class="lbl">Active Plans</div>
+        <div class="val" id="homeActivePlans">42</div>
+        <div class="sub">Across 18 users</div>
+      </div>
+      <div class="stat">
+        <div class="lbl">Protocol Fees</div>
+        <div class="val">$62.40<span class="unit">USDC</span></div>
+        <div class="sub">0.5% per execution</div>
+      </div>
+      <div class="stat">
+        <div class="lbl">Executions</div>
+        <div class="val">312</div>
+        <div class="sub">Keeper uptime 100%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── APP TAB (dashboard) ─── -->
+<div id="tab-app" class="tab-panel">
+  <div class="page">
+    <h1 style="font-size:36px;letter-spacing:-0.02em;margin:16px 0 8px;">Your DCA Plans</h1>
+    <p style="color:var(--text-dim);margin:0 0 32px;">Create a schedule or manage your active plans. All execution happens on-chain.</p>
+
+    <div class="dash-grid">
+      <!-- Create plan -->
+      <div class="card">
+        <h2>Create a Plan</h2>
+        <div class="subhead">Deposit once, swap on a schedule.</div>
+
+        <div class="form-row">
+          <label>Swap</label>
+          <div class="direction-toggle">
+            <div class="token" id="tokenIn">
+              <div class="ico usdc">U</div>
+              <div class="meta"><div class="code">USDC</div><div class="name">USD Coin</div></div>
+            </div>
+            <button class="arrow-btn" id="swapDir">⇄</button>
+            <div class="token" id="tokenOut">
+              <div class="ico xlm">X</div>
+              <div class="meta"><div class="code">XLM</div><div class="name">Stellar Lumens</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Amount per buy</label>
+          <input class="input" id="amtPerBuy" type="number" placeholder="50" step="any" value="50">
+          <div class="form-help">In the token you're spending (USDC above).</div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label>Interval</label>
+            <select class="input select" id="interval">
+              <option value="3600">Every hour</option>
+              <option value="86400">Daily</option>
+              <option value="604800" selected>Weekly</option>
+              <option value="2592000">Monthly</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label># of buys</label>
+            <input class="input" id="numBuys" type="number" value="10" min="1" max="365">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>Max slippage (bps)</label>
+          <input class="input" id="slippage" type="number" value="100" min="0" max="1000">
+          <div class="form-help">100 bps = 1%. Max 1000 (10%).</div>
+        </div>
+
+        <div class="summary">
+          <div class="summary-row"><span class="k">Per execution</span><span class="v" id="sumAmt">50.00 USDC</span></div>
+          <div class="summary-row"><span class="k">Fee (0.5%)</span><span class="v" id="sumFee">0.25 USDC</span></div>
+          <div class="summary-row"><span class="k">Executions</span><span class="v" id="sumBuys">10</span></div>
+          <div class="summary-row total"><span class="k">Total deposit</span><span class="v" id="sumTotal">500.00 USDC</span></div>
+        </div>
+
+        <button class="btn-create" id="createBtn">Create Plan</button>
+      </div>
+
+      <!-- My plans -->
+      <div class="card">
+        <h2>My Plans</h2>
+        <div class="subhead">Executed by anyone (bot/keeper) when due.</div>
+        <div id="plansList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ADMIN TAB ─── -->
+<div id="tab-admin" class="tab-panel">
+  <div class="page">
+    <h1 style="font-size:36px;letter-spacing:-0.02em;margin:16px 0 8px;">Admin Panel</h1>
+    <p style="color:var(--text-dim);margin:0 0 32px;">Protocol configuration & treasury. Only the admin address can modify these.</p>
+
+    <div class="stats" style="margin-bottom:24px;">
+      <div class="stat">
+        <div class="lbl">Fee Rate</div>
+        <div class="val" id="adminFee">50 <span class="unit">bps</span></div>
+        <div class="sub">0.5% per execution</div>
+      </div>
+      <div class="stat">
+        <div class="lbl">Status</div>
+        <div class="val" id="adminStatus" style="color:var(--success);">Active</div>
+        <div class="sub">Create & execute enabled</div>
+      </div>
+      <div class="stat">
+        <div class="lbl">Fees collected (USDC)</div>
+        <div class="val">4.80</div>
+        <div class="sub">+ 0.25 this hour</div>
+      </div>
+      <div class="stat">
+        <div class="lbl">Fees collected (XLM)</div>
+        <div class="val">1.42</div>
+        <div class="sub">Routed to treasury</div>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="card">
+        <h2>Set Fee</h2>
+        <div class="subhead">Hard cap: 200 bps (2%).</div>
+        <div class="form-row">
+          <label>New fee (bps)</label>
+          <input class="input" id="feeInput" type="number" value="50" min="0" max="200">
+        </div>
+        <button class="btn-create" onclick="setFee()">Update Fee</button>
+      </div>
+      <div class="card">
+        <h2>Emergency Controls</h2>
+        <div class="subhead">Pause blocks create & execute. Cancel always works.</div>
+        <button class="btn-sm" style="width:100%;padding:14px;margin-top:12px;" onclick="togglePause()" id="pauseBtn">⏸ Pause Protocol</button>
+        <button class="btn-sm danger" style="width:100%;padding:14px;margin-top:10px;" onclick="demoReset()">Reset Demo State</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal ─── -->
+<div class="modal-backdrop" id="walletModal">
+  <div class="modal">
+    <h3>Connect Wallet</h3>
+    <p>Pick a wallet to continue. (Demo mode uses a mock account.)</p>
+    <div class="wallet-option" onclick="connectWallet('Freighter')">
+      <div class="logo">F</div>
+      <div class="meta"><div class="name">Freighter</div><div class="desc">Stellar's official browser wallet</div></div>
+    </div>
+    <div class="wallet-option" onclick="connectWallet('xBull')">
+      <div class="logo">X</div>
+      <div class="meta"><div class="name">xBull</div><div class="desc">Multi-platform Stellar wallet</div></div>
+    </div>
+    <div class="wallet-option" onclick="connectWallet('Demo')">
+      <div class="logo">D</div>
+      <div class="meta"><div class="name">Demo Account</div><div class="desc">Mock wallet — no real signing</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Toast ─── -->
+<div class="toast" id="toast"><div class="ico">✓</div><div><div class="msg" id="toastMsg">Done</div><div class="sub" id="toastSub"></div></div></div>
+
+<script>
+  // ─────────────────────────────────────────────── State
+  const state = {
+    wallet: null,
+    direction: 'usdc-xlm',  // 'usdc-xlm' or 'xlm-usdc'
+    paused: false,
+    feeBps: 50,
+    nextId: 1n,
+    plans: [],
+  };
+
+  // Seed demo plans (visible until wallet connects)
+  const seedPlans = () => [
+    {
+      id: 'demo-1',
+      tokenIn: 'USDC',
+      tokenOut: 'XLM',
+      amountPerBuy: 50,
+      interval: 604800, // weekly
+      remaining: 7,
+      total: 10,
+      nextExec: Date.now() + 1000*60*60*18,
+      slippageBps: 100,
+    },
+    {
+      id: 'demo-2',
+      tokenIn: 'XLM',
+      tokenOut: 'USDC',
+      amountPerBuy: 200,
+      interval: 86400,
+      remaining: 2,
+      total: 30,
+      nextExec: Date.now() + 1000*60*45,
+      slippageBps: 150,
+    },
+  ];
+
+  // ─────────────────────────────────────────────── Tabs
+  function switchTab(name) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  document.querySelectorAll('.nav-tab').forEach(t => t.onclick = () => switchTab(t.dataset.tab));
+
+  // ─────────────────────────────────────────────── Wallet
+  const walletBtn = document.getElementById('walletBtn');
+  const walletModal = document.getElementById('walletModal');
+  walletBtn.onclick = () => {
+    if (state.wallet) {
+      state.wallet = null;
+      renderWallet();
+      state.plans = [];
+      renderPlans();
+      toast('Wallet disconnected', '', 'ok');
+    } else {
+      walletModal.classList.add('show');
+    }
+  };
+  walletModal.onclick = (e) => { if (e.target === walletModal) walletModal.classList.remove('show'); };
+
+  function connectWallet(provider) {
+    state.wallet = { provider, address: 'G' + Array.from({length:55},()=>'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[Math.floor(Math.random()*32)]).join('') };
+    walletModal.classList.remove('show');
+    renderWallet();
+    // Load seed plans
+    state.plans = seedPlans();
+    renderPlans();
+    toast('Wallet connected', provider + ' · ' + state.wallet.address.slice(0,6) + '…' + state.wallet.address.slice(-4), 'ok');
+  }
+
+  function renderWallet() {
+    if (state.wallet) {
+      const short = state.wallet.address.slice(0,6) + '…' + state.wallet.address.slice(-4);
+      walletBtn.className = 'wallet-btn connected';
+      walletBtn.innerHTML = '<span class="dot"></span>' + short;
+    } else {
+      walletBtn.className = 'wallet-btn';
+      walletBtn.textContent = 'Connect Wallet';
+    }
+  }
+
+  // ─────────────────────────────────────────────── Create plan form
+  const tokenInEl = document.getElementById('tokenIn');
+  const tokenOutEl = document.getElementById('tokenOut');
+  const swapDir = document.getElementById('swapDir');
+  const amtInput = document.getElementById('amtPerBuy');
+  const intervalInput = document.getElementById('interval');
+  const numBuysInput = document.getElementById('numBuys');
+  const slipInput = document.getElementById('slippage');
+
+  const TOKEN_META = {
+    USDC: { ico: 'usdc', letter: 'U', name: 'USD Coin' },
+    XLM:  { ico: 'xlm',  letter: 'X', name: 'Stellar Lumens' },
+  };
+
+  function renderDirection() {
+    const [a, b] = state.direction === 'usdc-xlm' ? ['USDC', 'XLM'] : ['XLM', 'USDC'];
+    const ma = TOKEN_META[a], mb = TOKEN_META[b];
+    tokenInEl.innerHTML = `<div class="ico ${ma.ico}">${ma.letter}</div><div class="meta"><div class="code">${a}</div><div class="name">${ma.name}</div></div>`;
+    tokenOutEl.innerHTML = `<div class="ico ${mb.ico}">${mb.letter}</div><div class="meta"><div class="code">${b}</div><div class="name">${mb.name}</div></div>`;
+    updateSummary();
+  }
+  swapDir.onclick = () => {
+    state.direction = state.direction === 'usdc-xlm' ? 'xlm-usdc' : 'usdc-xlm';
+    renderDirection();
+  };
+
+  function updateSummary() {
+    const amt = parseFloat(amtInput.value) || 0;
+    const n = parseInt(numBuysInput.value) || 0;
+    const inToken = state.direction === 'usdc-xlm' ? 'USDC' : 'XLM';
+    const fee = amt * (state.feeBps / 10000);
+    document.getElementById('sumAmt').textContent = amt.toFixed(2) + ' ' + inToken;
+    document.getElementById('sumFee').textContent = fee.toFixed(2) + ' ' + inToken;
+    document.getElementById('sumBuys').textContent = n;
+    document.getElementById('sumTotal').textContent = (amt * n).toFixed(2) + ' ' + inToken;
+  }
+  [amtInput, intervalInput, numBuysInput, slipInput].forEach(el => el.oninput = updateSummary);
+  updateSummary();
+  renderDirection();
+
+  // ─────────────────────────────────────────────── Create
+  document.getElementById('createBtn').onclick = () => {
+    if (!state.wallet) {
+      walletModal.classList.add('show');
+      return;
+    }
+    if (state.paused) { toast('Protocol paused', 'Admin has paused new plans.', 'err'); return; }
+    const amt = parseFloat(amtInput.value);
+    const n = parseInt(numBuysInput.value);
+    const interval = parseInt(intervalInput.value);
+    const slip = parseInt(slipInput.value);
+    if (!amt || amt <= 0) { toast('Invalid amount', 'Enter an amount greater than 0.', 'err'); return; }
+    if (n < 1 || n > 365) { toast('Invalid buy count', 'Must be between 1 and 365.', 'err'); return; }
+    if (interval < 60) { toast('Interval too short', 'Minimum 60 seconds.', 'err'); return; }
+
+    const btn = document.getElementById('createBtn');
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading"></span>Signing transaction…';
+
+    setTimeout(() => {
+      const [inTok, outTok] = state.direction === 'usdc-xlm' ? ['USDC','XLM'] : ['XLM','USDC'];
+      const plan = {
+        id: Number(state.nextId++),
+        tokenIn: inTok,
+        tokenOut: outTok,
+        amountPerBuy: amt,
+        interval,
+        remaining: n,
+        total: n,
+        nextExec: Date.now(),  // first can run immediately
+        slippageBps: slip,
+      };
+      state.plans.unshift(plan);
+      renderPlans();
+      btn.disabled = false;
+      btn.textContent = original;
+      toast('Plan created', `${n} × ${amt} ${inTok} → ${outTok} every ${intervalLabel(interval)}.`, 'ok');
+    }, 1200);
+  };
+
+  // ─────────────────────────────────────────────── Plans render
+  function intervalLabel(sec) {
+    if (sec >= 2592000) return 'month';
+    if (sec >= 604800)  return 'week';
+    if (sec >= 86400)   return 'day';
+    if (sec >= 3600)    return 'hour';
+    return sec + 's';
+  }
+  function timeUntil(ts) {
+    const d = ts - Date.now();
+    if (d <= 0) return 'now';
+    const m = Math.floor(d / 60000);
+    if (m < 60) return 'in ' + m + 'm';
+    const h = Math.floor(m / 60);
+    if (h < 24) return 'in ' + h + 'h';
+    return 'in ' + Math.floor(h / 24) + 'd';
+  }
+  function renderPlans() {
+    const list = document.getElementById('plansList');
+    if (!state.plans.length) {
+      list.innerHTML = `
+        <div class="plans-empty">
+          <div class="ico">◇</div>
+          <p>No plans yet. Create one on the left.</p>
+          ${state.wallet ? '' : '<p style="margin-top:8px;">Connect your wallet to get started.</p>'}
+        </div>`;
+      return;
+    }
+    list.innerHTML = state.plans.map(p => {
+      const inM = TOKEN_META[p.tokenIn], outM = TOKEN_META[p.tokenOut];
+      const progress = ((p.total - p.remaining) / p.total) * 100;
+      const isDue = p.nextExec <= Date.now();
+      const completed = p.remaining === 0;
+      return `
+        <div class="plan ${completed ? 'completed' : ''}">
+          <div class="plan-head">
+            <div class="plan-swap">
+              <div class="token" style="padding:0;"><div class="ico ${inM.ico}">${inM.letter}</div><div class="code">${p.tokenIn}</div></div>
+              <span class="arrow">→</span>
+              <div class="token" style="padding:0;"><div class="ico ${outM.ico}">${outM.letter}</div><div class="code">${p.tokenOut}</div></div>
+            </div>
+            <div class="plan-id">#${p.id}</div>
+          </div>
+          <div class="plan-stats">
+            <div class="plan-stat"><div class="lbl">Per buy</div><div class="val">${p.amountPerBuy} ${p.tokenIn}</div></div>
+            <div class="plan-stat"><div class="lbl">Interval</div><div class="val">${intervalLabel(p.interval)}</div></div>
+            <div class="plan-stat"><div class="lbl">Remaining</div><div class="val">${p.remaining} / ${p.total}</div></div>
+            <div class="plan-stat"><div class="lbl">Next</div><div class="val">${completed ? '—' : timeUntil(p.nextExec)}</div></div>
+          </div>
+          <div class="progress"><div class="progress-bar" style="width:${progress}%"></div></div>
+          <div class="plan-actions">
+            ${completed ? '' : `<button class="btn-sm" onclick="executeIt(${p.id === 'demo-1' || p.id === 'demo-2' ? "'" + p.id + "'" : p.id})" ${isDue ? '' : 'disabled title="Not due yet"'}>⚡ Execute${isDue ? '' : ' (not due)'}</button>`}
+            ${completed ? '' : `<button class="btn-sm danger" onclick="cancelIt(${p.id === 'demo-1' || p.id === 'demo-2' ? "'" + p.id + "'" : p.id})">Cancel</button>`}
+          </div>
+        </div>`;
+    }).join('');
+  }
+  renderPlans();
+
+  // ─────────────────────────────────────────────── Execute / Cancel
+  window.executeIt = (id) => {
+    const p = state.plans.find(x => x.id === id);
+    if (!p) return;
+    toast('Executing swap…', 'Calling router + settling via Soroswap.', 'ok');
+    setTimeout(() => {
+      p.remaining -= 1;
+      p.nextExec = Date.now() + p.interval * 1000;
+      if (p.remaining === 0) toast('Plan completed', 'All executions settled on-chain.', 'ok');
+      else toast('Swap settled', `${p.remaining}/${p.total} remaining · fee 0.5% to treasury.`, 'ok');
+      renderPlans();
+    }, 900);
+  };
+  window.cancelIt = (id) => {
+    const p = state.plans.find(x => x.id === id);
+    if (!p) return;
+    const refund = p.amountPerBuy * p.remaining;
+    state.plans = state.plans.filter(x => x.id !== id);
+    renderPlans();
+    toast('Plan cancelled', `Refunded ${refund.toFixed(2)} ${p.tokenIn} to your wallet.`, 'ok');
+  };
+
+  // ─────────────────────────────────────────────── Admin
+  function setFee() {
+    const v = parseInt(document.getElementById('feeInput').value);
+    if (isNaN(v) || v < 0 || v > 200) { toast('Invalid fee', 'Must be between 0 and 200 bps.', 'err'); return; }
+    state.feeBps = v;
+    document.getElementById('adminFee').innerHTML = v + ' <span class="unit">bps</span>';
+    updateSummary();
+    toast('Fee updated', `New rate: ${(v/100).toFixed(2)}%.`, 'ok');
+  }
+  window.setFee = setFee;
+  function togglePause() {
+    state.paused = !state.paused;
+    const el = document.getElementById('adminStatus');
+    const btn = document.getElementById('pauseBtn');
+    if (state.paused) { el.textContent = 'Paused'; el.style.color = 'var(--warning)'; btn.textContent = '▶ Resume Protocol'; }
+    else { el.textContent = 'Active'; el.style.color = 'var(--success)'; btn.textContent = '⏸ Pause Protocol'; }
+    toast(state.paused ? 'Protocol paused' : 'Protocol resumed', state.paused ? 'Create & execute blocked. Cancel still works.' : 'All operations enabled.', 'ok');
+  }
+  window.togglePause = togglePause;
+  function demoReset() {
+    state.plans = state.wallet ? seedPlans() : [];
+    state.feeBps = 50;
+    state.paused = false;
+    document.getElementById('feeInput').value = 50;
+    document.getElementById('adminFee').innerHTML = '50 <span class="unit">bps</span>';
+    document.getElementById('adminStatus').textContent = 'Active';
+    document.getElementById('adminStatus').style.color = 'var(--success)';
+    document.getElementById('pauseBtn').textContent = '⏸ Pause Protocol';
+    updateSummary();
+    renderPlans();
+    toast('Demo reset', 'All plans cleared. Defaults restored.', 'ok');
+  }
+  window.demoReset = demoReset;
+
+  // ─────────────────────────────────────────────── Toast
+  const toastEl = document.getElementById('toast');
+  let toastTimer;
+  function toast(msg, sub, kind) {
+    clearTimeout(toastTimer);
+    toastEl.className = 'toast ' + (kind || 'ok') + ' show';
+    document.getElementById('toastMsg').textContent = msg;
+    document.getElementById('toastSub').textContent = sub || '';
+    toastEl.querySelector('.ico').textContent = kind === 'err' ? '!' : '✓';
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3800);
+  }
+
+  // Tick timers (updates "in X min" strings every 30s)
+  setInterval(() => { if (state.plans.length) renderPlans(); }, 30000);
+</script>
+</body>
+</html>
