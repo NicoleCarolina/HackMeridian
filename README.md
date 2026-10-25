@@ -48,10 +48,12 @@ Keeper (ejecuta los planes que ya tocan): `DCA_ID=C... ./scripts/keeper.sh`
 
 - **Tests del contrato: pasan** (9 OK — crear, ejecutar, cancelar, ejecutar antes de tiempo, comisión, slippage, pausa, validaciones, tope de comisión).
 - **Router de Soroswap en testnet: VERIFICADO.** Dirección fijada en `environments.toml`:
-  `CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD` (fuente: [soroswap/core testnet.contracts.json](https://github.com/soroswap/core/blob/main/public/testnet.contracts.json)). Firmas del trait `router.rs` verificadas contra el router real de Soroswap (`router_get_amounts_out`, `router_pair_for`, `swap_exact_tokens_for_tokens`). **PENDIENTE antes de la demo:** confirmar que existe un pool con liquidez para el par USDC/XLM elegido en testnet; si no hay, usar tokens de la faucet de Soroswap (XTAR, etc.) o emitir un USDC propio.
-- **Direcciones USDC/XLM:** completarlas en `app/.env`:
-  - USDC testnet (Circle): emisor `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5` → derivar SAC con `stellar contract id asset --asset USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5 --network testnet`
-  - XLM nativo: `stellar contract id asset --asset native --network testnet`
+  `CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD` (fuente: [soroswap/core testnet.contracts.json](https://github.com/soroswap/core/blob/main/public/testnet.contracts.json)). Firmas del trait `router.rs` verificadas contra el router real de Soroswap (`router_get_amounts_out`, `router_pair_for`, `swap_exact_tokens_for_tokens`).
+- **Direcciones USDC/XLM: FIJADAS.** Usamos los tokens que Soroswap deploya en testnet (los que tienen pools de liquidez), **no** el USDC real de Circle:
+  - XLM (nativo wrapped): `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
+  - USDC (Soroswap mint): `CB3TLW74NBIOT3BUWOZ3TUM6RFDF6A4GVIRUQRQZABG5KPOUL4JJOV2F`
+  - Catálogo completo: [soroswap/core tokens.json](https://github.com/soroswap/core/blob/main/public/tokens.json). El USDC real de Circle en testnet (emisor `GBBD47IF...`) no tiene pool en Soroswap, por eso usamos el de Soroswap.
+- **Verificar pool USDC/XLM en Soroswap testnet antes de la demo:** `stellar contract invoke --id CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD --network testnet -- router_pair_for --token_a CB3TLW74NBIOT3BUWOZ3TUM6RFDF6A4GVIRUQRQZABG5KPOUL4JJOV2F --token_b CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`. Si devuelve una address, el par existe. Luego revisa reservas con `stellar contract invoke --id <PAIR> --network testnet -- get_reserves`.
 - **Frontend: no compilado ni probado.** Está escrito contra el cliente TypeScript que genera `npm start`; puede requerir ajustes de tipos.
 - **Slippage:** la cotización se toma en la misma transacción; en mainnet conviene contrastarla con un oráculo (p. ej. Reflector).
 - **Solo testnet.** Un contrato que custodia fondos necesita auditoría antes de mainnet.
