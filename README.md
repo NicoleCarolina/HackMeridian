@@ -1,99 +1,149 @@
 ![Stellar](https://img.shields.io/badge/Stellar-black?style=for-the-badge)
-
-```
-╔══════════════════════════════════════════╗
-║                                            ║
-║       🕹️   BARCELONA BUILDER HQ   🕹️      ║
-║                                            ║
-╚══════════════════════════════════════════╝
-```
-
-![Network](https://img.shields.io/badge/network-testnet-9945FF?style=for-the-badge)
+![Network](https://img.shields.io/badge/testnet-LIVE-00e6aa?style=for-the-badge)
 ![Built with](https://img.shields.io/badge/built%20with-Soroban-000000?style=for-the-badge)
-![Scaffold](https://img.shields.io/badge/Scaffold%20Stellar-grey?style=for-the-badge)
-![Status](https://img.shields.io/badge/status-ready%20to%20hack-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/tests-9%2F9%20passing-brightgreen?style=for-the-badge)
+![Audit](https://img.shields.io/badge/audit-pending-ffb400?style=for-the-badge)
+
+# DCA Platform · Stellar
+
+> **Dollar-cost averaging, non-custodial, on Stellar Testnet.**
+> Deposit once. Swap on a schedule. 0.5 % per execution to the treasury, hard-capped at 2 %. Cancel anytime.
 
 ---
 
-👉 **Antes del taller, sigue la [guía de preparación](docs/preparacion.md).**
+## 🚨 Live on Testnet
+
+| | |
+|---|---|
+| **Contract ID** | [`CCCT7ERFARCNHA2TSAL2LQLLYUTPICWHSQL7KQBC43AHUORAEHJACQHS`](https://stellar.expert/explorer/testnet/contract/CCCT7ERFARCNHA2TSAL2LQLLYUTPICWHSQL7KQBC43AHUORAEHJACQHS) |
+| **Deploy tx** | [`58225b3f…f18b71`](https://stellar.expert/explorer/testnet/tx/58225b3f41dd07a013669b0f3274cb97a3b55b44be16257f1900373e50f18b71) |
+| **First real swap** (1 XLM → 0.167 USDC) | [`c5fe1cab…63c233`](https://stellar.expert/explorer/testnet/tx/c5fe1cab011827bcd4bfe25f09e097282db52b44bb64aeda0e8fbeb32163c233) |
+| **Soroswap pool (USDC/XLM)** | [`CDVAIOYH…FKDB`](https://stellar.expert/explorer/testnet/contract/CDVAIOYHCD4RUSLQNVFI7RIZBFT2JZMJWM4RTOLQZQXL4QAVXU5RFKDB) · reserves 36.9k USDC + 217k XLM |
+| **Live product preview** | https://raw.githack.com/NicoleCarolina/HackMeridian/main/demo.html |
 
 ---
 
-## Qué es esto?
-
-Plataforma de **DCA (compras recurrentes) en Stellar Testnet**: el usuario deposita USDC (o XLM) y programa compras periódicas del otro activo. La plataforma cobra una **comisión por ejecución** (0,5 % por defecto, máx. 2 %) que va a una tesorería.
+## What it does
 
 ```
-create_plan  → el usuario deposita monto × nº de compras (escrow en el contrato)
-execute      → cualquiera (bot/keeper) la dispara cuando toca:
-               comisión → tesorería, resto → swap vía router → el usuario recibe
-cancel       → devuelve el saldo no ejecutado (siempre permitido, incluso en pausa)
+create_plan  → user deposits amount × num_buys (escrowed in the contract)
+execute      → anyone (bot / keeper) triggers it when due:
+               fee → treasury, remainder → router → user receives the swap
+cancel       → refunds the unexecuted balance (always allowed, even if paused)
 admin        → set_fee_bps (≤ 200), set_treasury, set_router, set_paused
 ```
 
-Contrato: `contracts/dca-platform/src/lib.rs`. El swap está detrás de la interfaz `router.rs` (compatible con Soroswap); los tests usan un router simulado.
-
-## Cómo correrlo
-
-```
-npm install
-cp app/.env.example app/.env   # completa PUBLIC_USDC_CONTRACT y PUBLIC_XLM_CONTRACT
-npm start
-cargo test -p dca-platform     # tests del contrato (9)
-```
-
-Keeper (ejecuta los planes que ya tocan): `DCA_ID=C... ./scripts/keeper.sh`
-
-## Estado y pendientes (léelo antes de la demo)
-
-- **Tests del contrato: pasan** (9 OK — crear, ejecutar, cancelar, ejecutar antes de tiempo, comisión, slippage, pausa, validaciones, tope de comisión).
-- **Router de Soroswap en testnet: VERIFICADO.** Dirección fijada en `environments.toml`:
-  `CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD` (fuente: [soroswap/core testnet.contracts.json](https://github.com/soroswap/core/blob/main/public/testnet.contracts.json)). Firmas del trait `router.rs` verificadas contra el router real de Soroswap (`router_get_amounts_out`, `router_pair_for`, `swap_exact_tokens_for_tokens`).
-- **Direcciones USDC/XLM: FIJADAS.** Usamos los tokens que Soroswap deploya en testnet (los que tienen pools de liquidez), **no** el USDC real de Circle:
-  - XLM (nativo wrapped): `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
-  - USDC (Soroswap mint): `CB3TLW74NBIOT3BUWOZ3TUM6RFDF6A4GVIRUQRQZABG5KPOUL4JJOV2F`
-  - Catálogo completo: [soroswap/core tokens.json](https://github.com/soroswap/core/blob/main/public/tokens.json). El USDC real de Circle en testnet (emisor `GBBD47IF...`) no tiene pool en Soroswap, por eso usamos el de Soroswap.
-- **Verificar pool USDC/XLM en Soroswap testnet antes de la demo:** `stellar contract invoke --id CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD --network testnet -- router_pair_for --token_a CB3TLW74NBIOT3BUWOZ3TUM6RFDF6A4GVIRUQRQZABG5KPOUL4JJOV2F --token_b CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`. Si devuelve una address, el par existe. Luego revisa reservas con `stellar contract invoke --id <PAIR> --network testnet -- get_reserves`.
-- **Frontend: no compilado ni probado.** Está escrito contra el cliente TypeScript que genera `npm start`; puede requerir ajustes de tipos.
-- **Slippage:** la cotización se toma en la misma transacción; en mainnet conviene contrastarla con un oráculo (p. ej. Reflector).
-- **Solo testnet.** Un contrato que custodia fondos necesita auditoría antes de mainnet.
+Contract: [`contracts/dca-platform/src/lib.rs`](contracts/dca-platform/src/lib.rs). Swaps go through [Soroswap](https://soroswap.finance)'s AMM router (interface declared in [`router.rs`](contracts/dca-platform/src/router.rs), verified against upstream source). Tests use a mocked router.
 
 ---
 
-## Stack técnico
+## 🧪 Try it yourself (testnet)
 
+Need the Stellar CLI (`cargo install --locked stellar-cli` or `brew install stellar-cli`).
+
+```bash
+# 1. Fund a key
+stellar keys generate me --network testnet --fund
+
+# 2. Create a DCA plan — 1 XLM → USDC, every 60 s, 3 buys
+stellar contract invoke \
+  --id CCCT7ERFARCNHA2TSAL2LQLLYUTPICWHSQL7KQBC43AHUORAEHJACQHS \
+  --network testnet --source-account me --send=yes \
+  -- create_plan \
+    --owner me \
+    --token_in  CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC \
+    --token_out CB3TLW74NBIOT3BUWOZ3TUM6RFDF6A4GVIRUQRQZABG5KPOUL4JJOV2F \
+    --amount_per_buy 10000000 \
+    --interval 60 \
+    --num_buys 3 \
+    --slippage_bps 100
+# → returns your plan_id
+
+# 3. Trigger a buy immediately (first execution is always due at creation time)
+stellar contract invoke \
+  --id CCCT7ERFARCNHA2TSAL2LQLLYUTPICWHSQL7KQBC43AHUORAEHJACQHS \
+  --network testnet --source-account me --send=yes \
+  -- execute --plan_id <YOUR_PLAN_ID>
+# → settles the swap through Soroswap and returns the USDC amount received
+
+# 4. (Optional) Refund the remainder
+stellar contract invoke \
+  --id CCCT7ERFARCNHA2TSAL2LQLLYUTPICWHSQL7KQBC43AHUORAEHJACQHS \
+  --network testnet --source-account me --send=yes \
+  -- cancel --plan_id <YOUR_PLAN_ID>
 ```
-contrato  →  Rust + Soroban
-frontend  →  React + Vite
-red       →  Stellar Testnet
-base      →  Scaffold Stellar
-```
+
+**Reversing the direction (USDC → XLM):** you'll need Soroswap's testnet USDC in your wallet. Grab some via Soroswap's [testnet faucet](https://faucet.soroswap.finance), then swap `token_in`/`token_out` above.
 
 ---
 
-## Estructura del proyecto
+## 🏗️ How it's built
 
 ```
-taller-stellar-bcn/
+contract  →  Rust + Soroban SDK 26 (12.7 KB optimized WASM)
+router    →  Soroswap AMM router (verified against soroswap/core upstream)
+frontend  →  React + Vite + TypeScript (Scaffold Stellar client generation)
+keeper    →  bash script, polls plans and calls `execute` when due
+network   →  Stellar Testnet (room-ready for mainnet after audit)
+```
+
+### Key design decisions
+
+- **Non-custodial.** User signs `create_plan` once; after that anyone can call `execute`. The contract itself never gains discretion over user funds — the only paths out are "to the pool via Soroswap" or "back to the owner via `cancel`".
+- **Checks → effects → interactions.** Plan state is mutated before external calls, so a failed router call cannot replay the same slot.
+- **Fee hard cap at 2 % in the constructor.** The admin cannot grief users by raising it; the enforcement lives in bytecode.
+- **Soroswap pre-authorization.** Because the router pulls the input token from `to` (the DCA contract), we pre-authorize that nested `transfer` with `env.authorize_as_current_contract(...)`. Without this, `execute` fails with `Auth/InvalidAction`.
+- **Slippage guard.** Caller sets `slippage_bps` (max 1 000 = 10 %). On execution the contract takes the router's quote and applies the guard — if the real settlement comes back worse, the whole tx reverts (`SlippageExceeded`).
+
+---
+
+## 📦 Repository layout
+
+```
+hack-meridian/
 ├── contracts/
-│   └── dca-platform/       ← contrato DCA
-├── app/                    ← el frontend
-│   ├── .env                ← tu config local (no se sube)
-│   └── .env.example
-├── environments.toml        ← qué red y qué cuenta usar
-└── package.json
+│   └── dca-platform/           ← the DCA contract (Rust + Soroban)
+├── app/                        ← React + Vite frontend
+│   ├── .env.example            ← fill PUBLIC_USDC_CONTRACT and PUBLIC_XLM_CONTRACT
+│   └── src/components/DcaDashboard.tsx
+├── scripts/
+│   └── keeper.sh               ← poor-man's keeper (polls + calls execute)
+├── demo.html                   ← interactive product preview (works offline)
+├── environments.toml           ← Scaffold Stellar environment config
+└── e2e/tests/smoke.spec.ts     ← Playwright smoke test
 ```
 
 ---
 
-## Problemas comunes
+## 🧰 Local dev
 
-**La pantalla no carga la primera vez** → espera a que la terminal diga `Successfully generated client for: dca_platform`, luego refresca.
+```bash
+npm install
+cp app/.env.example app/.env     # already pre-filled with Soroswap testnet addresses
+cargo test -p dca-platform       # 9/9 passing
+stellar contract build           # builds the WASM
+npm start                        # frontend + Scaffold Stellar client gen
+```
 
-**No tienes wallet** → puedes jugar igual desde la terminal, invocando el contrato directamente.
+Keeper (runs every due plan):
+
+```bash
+DCA_ID=CCCT7ERFARCNHA2TSAL2LQLLYUTPICWHSQL7KQBC43AHUORAEHJACQHS ./scripts/keeper.sh
+```
 
 ---
 
-## Créditos
+## 🧭 What's next
 
-Base construida sobre [Scaffold Stellar](https://developers.stellar.org/docs/tools/scaffold-stellar), para Barcelona Builder HQ.
+- **External audit** before mainnet. The contract is small (<13 KB) but it custodies funds.
+- **Reflector oracle guard** so the slippage check doesn't rely on a quote taken in the same tx (sandwich-resistant).
+- **Multi-asset routing** beyond USDC/XLM — any Soroswap pair.
+- **Keeper-as-a-service** with on-chain incentives, so users don't need to run their own.
+
+---
+
+## 🤝 Credits
+
+Built for **HackMeridian** on top of [Scaffold Stellar](https://github.com/stellar/stellar-scaffold), with [Soroswap](https://soroswap.finance) as the swap backend.
+
+[`Nicole Fucili`](https://github.com/NicoleCarolina) · Alex Serra · 2026
