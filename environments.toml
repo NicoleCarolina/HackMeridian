@@ -22,12 +22,13 @@ default = true # Optional. Whether to use this account as the `--source` for com
 # Genera el cliente TypeScript (src/contracts) y despliega en testnet.
 client = true
 # admin = tu cuenta, treasury = tu cuenta (recibe las comisiones), fee 0,5 % (50 bps).
-# router: PLACEHOLDER (`me`). Hasta fijar el router real de Soroswap en testnet,
-# `execute` fallará. Cuando lo tengas verificado: `set_router --router C...`.
+# router: Soroswap AMM Router en testnet (verificado contra soroswap/core
+# public/testnet.contracts.json). Si Soroswap re-despliega el router, actualiza
+# aquí o llama `set_router --router C...` en caliente.
 constructor_args = """
 --admin me
 --treasury me
---router me
+--router CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD
 --fee_bps 50
 """
 
@@ -56,7 +57,7 @@ default = true
 # soroban-increment-contract = { id = "C567..." }
 # soroban-token-contract = { id = "C678..." }
 # eurc = { id = "C789..." }
-dca_platform = { client = true, constructor_args = "--admin me --treasury me --router me --fee_bps 50" }
+dca_platform = { client = true, constructor_args = "--admin testnet-user --treasury testnet-user --router CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD --fee_bps 50" }
 
 ### Production environment configuration
 [production.network]

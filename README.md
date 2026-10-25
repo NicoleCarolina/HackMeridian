@@ -46,9 +46,12 @@ Keeper (ejecuta los planes que ya tocan): `DCA_ID=C... ./scripts/keeper.sh`
 
 ## Estado y pendientes (léelo antes de la demo)
 
-- **Tests del contrato: pasan** (crear, ejecutar, cancelar, ejecutar antes de tiempo, comisión, slippage, pausa, validaciones).
-- **Router de Soroswap en testnet: SIN VERIFICAR.** `environments.toml` despliega con `--router me` como marcador; hasta fijar el router real (`set_router`), `execute` falla. Verifica también las firmas de `router.rs` (`router_get_amounts_out`, `router_pair_for`, `swap_exact_tokens_for_tokens`).
-- **Direcciones USDC/XLM:** déjalas en `app/.env` (XLM: `stellar contract id asset --asset native --network testnet`).
+- **Tests del contrato: pasan** (9 OK — crear, ejecutar, cancelar, ejecutar antes de tiempo, comisión, slippage, pausa, validaciones, tope de comisión).
+- **Router de Soroswap en testnet: VERIFICADO.** Dirección fijada en `environments.toml`:
+  `CCJUD55AG6W5HAI5LRVNKAE5WDP5XGZBUDS5WNTIVDU7O264UZZE7BRD` (fuente: [soroswap/core testnet.contracts.json](https://github.com/soroswap/core/blob/main/public/testnet.contracts.json)). Firmas del trait `router.rs` verificadas contra el router real de Soroswap (`router_get_amounts_out`, `router_pair_for`, `swap_exact_tokens_for_tokens`). **PENDIENTE antes de la demo:** confirmar que existe un pool con liquidez para el par USDC/XLM elegido en testnet; si no hay, usar tokens de la faucet de Soroswap (XTAR, etc.) o emitir un USDC propio.
+- **Direcciones USDC/XLM:** completarlas en `app/.env`:
+  - USDC testnet (Circle): emisor `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5` → derivar SAC con `stellar contract id asset --asset USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5 --network testnet`
+  - XLM nativo: `stellar contract id asset --asset native --network testnet`
 - **Frontend: no compilado ni probado.** Está escrito contra el cliente TypeScript que genera `npm start`; puede requerir ajustes de tipos.
 - **Slippage:** la cotización se toma en la misma transacción; en mainnet conviene contrastarla con un oráculo (p. ej. Reflector).
 - **Solo testnet.** Un contrato que custodia fondos necesita auditoría antes de mainnet.
